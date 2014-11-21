@@ -3,13 +3,14 @@ use strict;
 use warnings;
 use Text::CSV_XS qw( csv );
 use Getopt::Long;
+#TODO add parser for mht file
+#TODO add param TYPE which indicate whether the log is a txt file or mht file
 
 binmode(STDIN, ':encoding(utf8)');
 binmode(STDOUT, ':encoding(utf8)');
 binmode(STDERR, ':encoding(utf8)');
-#our $input = 'F:\chat-log-analyzer\data\log.txt';
-#our $output='F:\chat-log-analyzer\data\parsed_log.csv';
-our ($help,$input,$output);
+
+our ($help,$input,$output,$oe);
 &main();
 exit 0;
 
@@ -17,10 +18,11 @@ sub main{
 	GetOptions(
 		"help!"			=>	\$help,
 		"input=s"		=>	\$input,
-		"output=s"		=>	\$output
+		"output=s"		=>	\$output,
+		"oe=s"			=>	\$oe
 	);
 	if($help){
-		$help="Usage: perl qq_log_parser.pl -input INPUT_FILE -output OUTPUT_FILE\n";
+		$help="Usage: perl qq_log_parser.pl -input INPUT_FILE -output OUTPUT_FILE -oe OUTPUT_ENCODING\n";
 		print $help;
 		exit 0;
 	}
@@ -31,6 +33,11 @@ sub main{
 	unless ($output){
 		print "please set output parameter." ;
 		exit 0;
+	}
+	
+	unless ($oe){
+		print "Output encoding not set,use utf8 as default." ;
+		$oe = "UTF-8";
 	}
 	open CHAT_LOG,'<',$input
 	                or die "Can't open $input: $!";                 
@@ -55,7 +62,7 @@ sub main{
 	    	$message =~ s/\n/ /g;
 	    }
 	}
-	my $err = csv (in => $data_arr, out => $output,encoding => ':encoding(utf8)') 
+	my $err = csv (in => $data_arr, out => $output,encoding => ":encoding($oe)") 
 						or die Text::CSV_XS->error_diag;
 
 	close CHAT_LOG
